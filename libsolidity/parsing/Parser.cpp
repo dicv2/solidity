@@ -381,7 +381,7 @@ ASTPointer<Expression> Parser::parseContractStorageBaseLocationExpression()
 		m_errorReporter.parserError(
 			1994_error,
 			m_scanner->currentLocation(),
-			"\'layout\' should be followed by \'at <storage-base-expression>\'."
+			"Expected \'at\' but got " + tokenName(m_scanner->currentToken())
 		);
 
 	advance();
