@@ -57,6 +57,7 @@ public:
 	using LabelID = size_t;
 	using SubID = size_t;
 	using ContainerID = uint8_t;
+	using FunctionID = uint16_t;
 	enum class JumpType { Ordinary, IntoFunction, OutOfFunction };
 
 	virtual ~AbstractAssembly() = default;
@@ -101,6 +102,19 @@ public:
 	virtual void appendAssemblySize() = 0;
 	/// Creates a new sub-assembly, which can be referenced using dataSize and dataOffset.
 	virtual std::pair<std::shared_ptr<AbstractAssembly>, SubID> createSubAssembly(bool _creation, std::string _name = "") = 0;
+
+	/// Creates new function with given signature and returns newly created function ID
+	virtual FunctionID createFunction(uint8_t _args, uint8_t _rets) = 0;
+	/// Starts filling function body under given function ID
+	virtual void beginFunction(FunctionID _functionID) = 0;
+	/// Ends currently being filled function
+	virtual void endFunction() = 0;
+
+	/// Appends function call to a function under given ID
+	virtual void appendFunctionCall(FunctionID _functionID) = 0;
+	/// Appends function return from currently being filled function.
+	virtual void appendFunctionReturn() = 0;
+
 	/// Appends the offset of the given sub-assembly or data.
 	virtual void appendDataOffset(std::vector<SubID> const& _subPath) = 0;
 	/// Appends the size of the given sub-assembly or data.

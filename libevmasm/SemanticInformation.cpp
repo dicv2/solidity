@@ -231,6 +231,9 @@ bool SemanticInformation::breaksCSEAnalysisBlock(AssemblyItem const& _item, bool
 	case PushDeployTimeAddress:
 	case AssignImmutable:
 	case VerbatimBytecode:
+	case CallF:
+	case JumpF:
+	case RetF:
 		return true;
 	case Push:
 	case PushTag:
@@ -331,6 +334,9 @@ bool SemanticInformation::altersControlFlow(AssemblyItem const& _item)
 	case Instruction::INVALID:
 	case Instruction::REVERT:
 	case Instruction::RETURNCONTRACT:
+	case Instruction::CALLF:
+	case Instruction::JUMPF:
+	case Instruction::RETF:
 		return true;
 	default:
 		return false;
@@ -397,6 +403,7 @@ bool SemanticInformation::isDeterministic(AssemblyItem const& _item)
 	case Instruction::RETURNDATACOPY: // depends on previous calls
 	case Instruction::RETURNDATASIZE:
 	case Instruction::EOFCREATE:
+	case Instruction::CALLF:
 		return false;
 	default:
 		return true;

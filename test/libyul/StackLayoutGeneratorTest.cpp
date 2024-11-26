@@ -45,7 +45,7 @@ using namespace solidity::frontend;
 using namespace solidity::frontend::test;
 
 StackLayoutGeneratorTest::StackLayoutGeneratorTest(std::string const& _filename):
-	TestCase(_filename)
+	frontend::test::EVMVersionRestrictedTestCase(_filename)
 {
 	m_source = m_reader.source();
 	auto dialectName = m_reader.stringSetting("dialect", "evm");

@@ -104,6 +104,7 @@ private:
 	Stack m_stack;
 	std::map<yul::FunctionCall const*, AbstractAssembly::LabelID> m_returnLabels;
 	std::map<CFG::BasicBlock const*, AbstractAssembly::LabelID> m_blockLabels;
+	/// Non-empty only if m_dfg.useFunctions == false
 	std::map<CFG::FunctionInfo const*, AbstractAssembly::LabelID> const m_functionLabels;
 	/// Set of blocks already generated. If any of the contained blocks is ever jumped to, m_blockLabels should
 	/// contain a jump label for it.
