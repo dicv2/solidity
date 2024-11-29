@@ -107,9 +107,9 @@ public:
 	/// The function is initially empty and its body must be filled with instructions.
 	virtual FunctionID registerFunction(uint8_t _args, uint8_t _rets) = 0;
 	/// Selects a function as a target for newly appended instructions.
-	/// Must not be called when another function is already selected.
+	/// May only be called after the main code section is already filled and
+	/// must not be called when another function is already selected.
 	/// Filling the same function more than once is not allowed.
-	/// Must be called after filling the main yul section
 	/// @a endFunction() must be called at the end to finalize the function.
 	virtual void beginFunction(FunctionID _functionID) = 0;
 	/// Finalizes the process of filling a function body and switches back to the main code section.

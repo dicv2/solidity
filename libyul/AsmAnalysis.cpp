@@ -293,13 +293,18 @@ void AsmAnalyzer::operator()(FunctionDefinition const& _funDef)
 	if (m_eofVersion.has_value())
 	{
 		if (_funDef.parameters.size() >= 0x80)
-			m_errorReporter.typeError(8534_error, nativeLocationOf(_funDef),
-				"Too many function parameters. At most 127 parameters allowed for EOF");
+			m_errorReporter.typeError(
+				8534_error,
+				nativeLocationOf(_funDef),
+				"Too many function parameters. At most 127 parameters allowed for EOF"
+			);
 
 		if (_funDef.returnVariables.size() >= 0x80)
-			m_errorReporter.typeError(2101_error, nativeLocationOf(_funDef),
-				"Too many function return variables. At most 127 return variables allowed for EOF");
-
+			m_errorReporter.typeError(
+				2101_error,
+				nativeLocationOf(_funDef),
+				"Too many function return variables. At most 127 return variables allowed for EOF"
+			);
 	}
 
 	(*this)(_funDef.body);

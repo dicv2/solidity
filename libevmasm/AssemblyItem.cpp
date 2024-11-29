@@ -203,15 +203,9 @@ size_t AssemblyItem::arguments() const
 {
 	if (type() == CallF || type() == JumpF)
 		return functionSignature().argsNum;
-	else if (type() == RetF)
-		return 0;
 	else if (hasInstruction())
 	{
-		solAssert(
-			instruction() != Instruction::CALLF &&
-			instruction() != Instruction::JUMPF &&
-			instruction() != Instruction::RETF
-		);
+		solAssert(instruction() != Instruction::CALLF && instruction() != Instruction::JUMPF);
 		// The latest EVMVersion is used here, since the InstructionInfo is assumed to be
 		// the same across all EVM versions except for the instruction name.
 		return static_cast<size_t>(instructionInfo(instruction(), EVMVersion()).args);

@@ -20,9 +20,7 @@ object "a" {
 }
 
 // ====
-// EVMVersion: >=shanghai
 // bytecodeFormat: >=EOFv1
 // ----
 // TypeError 8534: (32-800): Too many function parameters. At most 127 parameters allowed for EOF
 // TypeError 2101: (810-1569): Too many function return variables. At most 127 return variables allowed for EOF
-
