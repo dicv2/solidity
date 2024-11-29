@@ -49,11 +49,11 @@ using namespace solidity::yul;
 
 StackLayout StackLayoutGenerator::run(CFG const& _cfg)
 {
-	StackLayout stackLayout{_cfg.useFunctions, {}, {}};
-	StackLayoutGenerator{stackLayout, nullptr}.processEntryPoint(*_cfg.entry);
+	StackLayout stackLayout{{}, {}};
+	StackLayoutGenerator{stackLayout, nullptr, _cfg.simulateFunctionsWithJumps}.processEntryPoint(*_cfg.entry);
 
 	for (auto& functionInfo: _cfg.functionInfo | ranges::views::values)
-		StackLayoutGenerator{stackLayout, &functionInfo}.processEntryPoint(*functionInfo.entry, &functionInfo);
+		StackLayoutGenerator{stackLayout, &functionInfo, _cfg.simulateFunctionsWithJumps}.processEntryPoint(*functionInfo.entry, &functionInfo);
 
 	return stackLayout;
 }
@@ -70,7 +70,7 @@ std::map<YulName, std::vector<StackLayoutGenerator::StackTooDeep>> StackLayoutGe
 
 std::vector<StackLayoutGenerator::StackTooDeep> StackLayoutGenerator::reportStackTooDeep(CFG const& _cfg, YulName _functionName)
 {
-	StackLayout stackLayout{_cfg.useFunctions, {}, {}};
+	StackLayout stackLayout{{}, {}};
 	CFG::FunctionInfo const* functionInfo = nullptr;
 	if (!_functionName.empty())
 	{
@@ -82,15 +82,16 @@ std::vector<StackLayoutGenerator::StackTooDeep> StackLayoutGenerator::reportStac
 		yulAssert(functionInfo, "Function not found.");
 	}
 
-	StackLayoutGenerator generator{stackLayout, functionInfo};
+	StackLayoutGenerator generator{stackLayout, functionInfo, _cfg.simulateFunctionsWithJumps};
 	CFG::BasicBlock const* entry = functionInfo ? functionInfo->entry : _cfg.entry;
 	generator.processEntryPoint(*entry);
 	return generator.reportStackTooDeep(*entry);
 }
 
-StackLayoutGenerator::StackLayoutGenerator(StackLayout& _layout, CFG::FunctionInfo const* _functionInfo):
+StackLayoutGenerator::StackLayoutGenerator(StackLayout& _layout, CFG::FunctionInfo const* _functionInfo, bool _simulateFunctionsWithJumps):
 	m_layout(_layout),
-	m_currentFunctionInfo(_functionInfo)
+	m_currentFunctionInfo(_functionInfo),
+	m_simulateFunctionsWithJumps(_simulateFunctionsWithJumps)
 {
 }
 
@@ -465,7 +466,7 @@ std::optional<Stack> StackLayoutGenerator::getExitLayoutOrStageDependencies(
 				return StackSlot{_varSlot};
 			}) | ranges::to<Stack>;
 
-			if (!m_layout.useFunctions)
+			if (m_simulateFunctionsWithJumps)
 				stack.emplace_back(FunctionReturnLabelSlot{_functionReturn.info->function});
 			return stack;
 		},
@@ -737,7 +738,7 @@ void StackLayoutGenerator::fillInJunk(CFG::BasicBlock const& _block, CFG::Functi
 					_addChild(_conditionalJump.zero);
 					_addChild(_conditionalJump.nonZero);
 				},
-				[&](CFG::BasicBlock::FunctionReturn const&) { yulAssert(m_layout.useFunctions); },
+				[&](CFG::BasicBlock::FunctionReturn const&) { yulAssert(!m_simulateFunctionsWithJumps); },
 				[&](CFG::BasicBlock::Terminated const&) {},
 			}, _block->exit);
 		});

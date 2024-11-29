@@ -52,7 +52,7 @@ struct NoOutputAssemblyContext
 class NoOutputAssembly: public AbstractAssembly
 {
 public:
-	explicit NoOutputAssembly(langutil::EVMVersion _evmVersion): m_context(std::make_shared<NoOutputAssemblyContext>()), m_evmVersion(_evmVersion) { }
+	explicit NoOutputAssembly(langutil::EVMVersion _evmVersion): m_evmVersion(_evmVersion) { }
 	~NoOutputAssembly() override = default;
 
 	void setSourceLocation(langutil::SourceLocation const&) override {}
@@ -73,7 +73,7 @@ public:
 
 	void appendAssemblySize() override;
 	std::pair<std::shared_ptr<AbstractAssembly>, SubID> createSubAssembly(bool _creation, std::string _name = "") override;
-	FunctionID createFunction(uint8_t _args, uint8_t _rets) override;
+	FunctionID registerFunction(uint8_t _args, uint8_t _rets) override;
 	void beginFunction(FunctionID) override;
 	void endFunction() override;
 	void appendFunctionCall(FunctionID _functionID) override;
@@ -96,8 +96,9 @@ public:
 	langutil::EVMVersion evmVersion() const override { return m_evmVersion; }
 
 private:
-	std::shared_ptr<NoOutputAssemblyContext> m_context;
+	NoOutputAssemblyContext m_context = {};
 	int m_stackHeight = 0;
+	FunctionID m_currentFunctionID = 0;
 	langutil::EVMVersion m_evmVersion;
 };
 

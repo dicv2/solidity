@@ -188,7 +188,7 @@ enum class Instruction: uint8_t
 	RJUMP = 0xe0,             ///< relative jump
 	RJUMPI = 0xe1,            ///< conditional relative jump
 	CALLF = 0xe3,             ///< call function in a EOF code section
-	RETF = 0xe4,              ///< return to caller from the code section of EOF continer
+	RETF = 0xe4,              ///< return to caller from the code section of EOF container
 	JUMPF = 0xe5,             ///< jump to a code section of EOF container without adding a new return stack frame.
 	EOFCREATE = 0xec,         ///< create a new account with associated container code.
 	RETURNCONTRACT = 0xee,    ///< return container to be deployed with axiliary data filled in.

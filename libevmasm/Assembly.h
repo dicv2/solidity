@@ -126,6 +126,7 @@ public:
 
 	AssemblyItem appendFunctionReturn()
 	{
+		solAssert(m_currentCodeSection != 0, "Appending function return without begin function.");
 		return append(newFunctionReturn());
 	}
 

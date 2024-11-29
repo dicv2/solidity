@@ -89,7 +89,7 @@ std::pair<std::string, std::string> AssemblyItem::nameAndData(langutil::EVMVersi
 	case CallF:
 	case JumpF:
 	case RetF:
-		return {instructionInfo(instruction(), _evmVersion).name, m_data != nullptr ? toStringInHex(*m_data) : ""};
+		return {instructionInfo(instruction(), _evmVersion).name, ""};
 	case Push:
 		return {"PUSH", toStringInHex(data())};
 	case PushTag:
@@ -233,6 +233,7 @@ size_t AssemblyItem::returnValues() const
 	case ReturnContract:
 	case RelativeJump:
 	case ConditionalRelativeJump:
+	case RetF:
 		// The latest EVMVersion is used here, since the InstructionInfo is assumed to be
 		// the same across all EVM versions except for the instruction name.
 		return static_cast<size_t>(instructionInfo(instruction(), EVMVersion()).ret);
@@ -252,8 +253,6 @@ size_t AssemblyItem::returnValues() const
 		return std::get<1>(*m_verbatimBytecode);
 	case AuxDataLoadN:
 		return 1;
-	case RetF:
-		return 0;
 	case JumpF:
 	case CallF:
 		return functionSignature().canContinue() ? functionSignature().retsNum : 0;
@@ -546,10 +545,9 @@ std::string AssemblyItem::computeSourceMapping(
 			static_cast<int>(_sourceIndicesMap.at(*location.sourceName)) :
 			-1;
 		char jump = '-';
-		// TODO: Uncomment when EOF functions introduced.
-		if (item.getJumpType() == evmasm::AssemblyItem::JumpType::IntoFunction /*|| item.type() == CallF || item.type() == JumpF*/)
+		if (item.getJumpType() == evmasm::AssemblyItem::JumpType::IntoFunction || item.type() == CallF || item.type() == JumpF)
 			jump = 'i';
-		else if (item.getJumpType() == evmasm::AssemblyItem::JumpType::OutOfFunction /*|| item.type() == RetF*/)
+		else if (item.getJumpType() == evmasm::AssemblyItem::JumpType::OutOfFunction || item.type() == RetF)
 			jump = 'o';
 		int modifierDepth = static_cast<int>(item.m_modifierDepth);
 

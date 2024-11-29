@@ -705,7 +705,7 @@ AssemblyItem Assembly::namedTag(std::string const& _name, size_t _params, size_t
 AssemblyItem Assembly::newFunctionCall(uint16_t _functionID) const
 {
 	solAssert(_functionID < m_codeSections.size(), "Call to undeclared function.");
-	solAssert(_functionID > 0, "Cannot call call section 0");
+	solAssert(_functionID > 0, "Cannot call section 0");
 	auto const& section = m_codeSections.at(_functionID);
 	if (section.outputs != 0x80)
 		return AssemblyItem::functionCall(_functionID, section.inputs, section.outputs);
@@ -715,22 +715,25 @@ AssemblyItem Assembly::newFunctionCall(uint16_t _functionID) const
 
 AssemblyItem Assembly::newFunctionReturn() const
 {
-	return AssemblyItem::functionReturn(m_codeSections.at(m_currentCodeSection).outputs);
+	solAssert(m_currentCodeSection != 0, "Appending function return without begin function.");
+	return AssemblyItem::functionReturn();
 }
 
 uint16_t Assembly::createFunction(uint8_t _args, uint8_t _rets)
 {
 	size_t functionID = m_codeSections.size();
-	solAssert(functionID < 1024, "Too many functions.");
+	solRequire(functionID < 1024, AssemblyException, "Too many functions for EOF");
 	solAssert(m_currentCodeSection == 0, "Functions need to be declared from the main block.");
 	solAssert(_rets <= 0x80, "Too many function returns.");
+	solAssert(_args <= 127, "Too many function inputs.");
 	m_codeSections.emplace_back(CodeSection{_args, _rets, {}});
 	return static_cast<uint16_t>(functionID);
 }
 
 void Assembly::beginFunction(uint16_t _functionID)
 {
-	solAssert(m_currentCodeSection == 0, "Atempted to begin a function before ending the last one.");
+	solAssert(m_currentCodeSection == 0, "Attempted to begin a function before ending the last one.");
+	solAssert(_functionID != 0, "Attempt to begin a function with id 0");
 	solAssert(_functionID < m_codeSections.size(), "Attempt to begin an undeclared function.");
 	auto& section = m_codeSections.at(_functionID);
 	solAssert(section.items.empty(), "Function already defined.");
@@ -1448,6 +1451,7 @@ LinkerObject const& Assembly::assembleEOF() const
 	for (auto&& [codeSectionIndex, codeSection]: m_codeSections | ranges::views::enumerate)
 	{
 		auto const sectionStart = ret.bytecode.size();
+		solAssert(!codeSection.items.empty(), "Empty code section.");
 		for (AssemblyItem const& item: codeSection.items)
 		{
 			// store position of the invalid jump destination
@@ -1536,17 +1540,14 @@ LinkerObject const& Assembly::assembleEOF() const
 				solAssert(item.type() == CallF || item.functionSignature().retsNum <= 128);
 				solAssert(m_codeSections[index].inputs == item.functionSignature().argsNum);
 				solAssert(m_codeSections[index].outputs == item.functionSignature().retsNum);
-				// If CallF the function can cantinue.
+				// If CallF the function can continue.
 				solAssert(item.type() == JumpF || item.functionSignature().canContinue());
 				appendBigEndianUint16(ret.bytecode, item.data());
 				break;
 			}
 			case RetF:
-			{
-				solAssert(item.data() <= 0x80, "Invalid number of outputs in RetF.");
 				ret.bytecode.push_back(static_cast<uint8_t>(Instruction::RETF));
 				break;
-			}
 			default:
 				solAssert(false, "Unexpected opcode while assembling.");
 			}

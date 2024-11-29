@@ -37,7 +37,6 @@ struct StackLayout
 		/// The resulting stack layout after executing the block.
 		Stack exitLayout;
 	};
-	bool useFunctions = false;
 	std::map<CFG::BasicBlock const*, BlockInfo> blockInfos;
 	/// For each operation the complete stack layout that:
 	/// - has the slots required for the operation at the stack top.
@@ -67,7 +66,7 @@ public:
 	static std::vector<StackTooDeep> reportStackTooDeep(CFG const& _cfg, YulName _functionName);
 
 private:
-	StackLayoutGenerator(StackLayout& _context, CFG::FunctionInfo const* _functionInfo);
+	StackLayoutGenerator(StackLayout& _context, CFG::FunctionInfo const* _functionInfo, bool _simulateFunctionsWithJumps);
 
 	/// @returns the optimal entry stack layout, s.t. @a _operation can be applied to it and
 	/// the result can be transformed to @a _exitStack with minimal stack shuffling.
@@ -117,6 +116,7 @@ private:
 
 	StackLayout& m_layout;
 	CFG::FunctionInfo const* m_currentFunctionInfo = nullptr;
+	bool m_simulateFunctionsWithJumps = true;
 };
 
 }

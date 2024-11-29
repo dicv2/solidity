@@ -124,9 +124,9 @@ public:
 		result.m_functionSignature = {_args, _rets};
 		return result;
 	}
-	static AssemblyItem functionReturn(uint8_t _rets, langutil::DebugData::ConstPtr _debugData = langutil::DebugData::create())
+	static AssemblyItem functionReturn(langutil::DebugData::ConstPtr _debugData = langutil::DebugData::create())
 	{
-		return AssemblyItem(RetF, Instruction::RETF, _rets, _debugData);
+		return AssemblyItem(RetF, Instruction::RETF, 0, std::move(_debugData));
 	}
 
 	static AssemblyItem eofCreate(ContainerID _containerID, langutil::DebugData::ConstPtr _debugData = langutil::DebugData::create())
