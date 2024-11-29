@@ -68,7 +68,8 @@ private:
 		BuiltinContext& _builtinContext,
 		UseNamedLabels _useNamedLabelsForFunctions,
 		CFG const& _dfg,
-		StackLayout const& _stackLayout
+		StackLayout const& _stackLayout,
+		bool _simulateFunctionsWithJumps
 	);
 
 	/// Assert that it is valid to transition from @a _currentStack to @a _desiredStack.
@@ -111,6 +112,8 @@ private:
 	std::set<CFG::BasicBlock const*> m_generated;
 	CFG::FunctionInfo const* m_currentFunctionInfo = nullptr;
 	std::vector<StackTooDeepError> m_stackErrors;
+	/// True if it simulates functions with jumps. False otherwise. True for legacy bytecode
+	bool m_simulateFunctionsWithJumps = true;
 };
 
 }

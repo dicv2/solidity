@@ -47,28 +47,28 @@
 using namespace solidity;
 using namespace solidity::yul;
 
-StackLayout StackLayoutGenerator::run(CFG const& _cfg)
+StackLayout StackLayoutGenerator::run(CFG const& _cfg, bool _simulateFunctionsWithJumps)
 {
 	StackLayout stackLayout{{}, {}};
-	StackLayoutGenerator{stackLayout, nullptr, _cfg.simulateFunctionsWithJumps}.processEntryPoint(*_cfg.entry);
+	StackLayoutGenerator{stackLayout, nullptr, _simulateFunctionsWithJumps}.processEntryPoint(*_cfg.entry);
 
 	for (auto& functionInfo: _cfg.functionInfo | ranges::views::values)
-		StackLayoutGenerator{stackLayout, &functionInfo, _cfg.simulateFunctionsWithJumps}.processEntryPoint(*functionInfo.entry, &functionInfo);
+		StackLayoutGenerator{stackLayout, &functionInfo, _simulateFunctionsWithJumps}.processEntryPoint(*functionInfo.entry, &functionInfo);
 
 	return stackLayout;
 }
 
-std::map<YulName, std::vector<StackLayoutGenerator::StackTooDeep>> StackLayoutGenerator::reportStackTooDeep(CFG const& _cfg)
+std::map<YulName, std::vector<StackLayoutGenerator::StackTooDeep>> StackLayoutGenerator::reportStackTooDeep(CFG const& _cfg, bool _simulateFunctionsWithJumps)
 {
 	std::map<YulName, std::vector<StackLayoutGenerator::StackTooDeep>> stackTooDeepErrors;
-	stackTooDeepErrors[YulName{}] = reportStackTooDeep(_cfg, YulName{});
+	stackTooDeepErrors[YulName{}] = reportStackTooDeep(_cfg, YulName{}, _simulateFunctionsWithJumps);
 	for (auto const& function: _cfg.functions)
-		if (auto errors = reportStackTooDeep(_cfg, function->name); !errors.empty())
+		if (auto errors = reportStackTooDeep(_cfg, function->name, _simulateFunctionsWithJumps); !errors.empty())
 			stackTooDeepErrors[function->name] = std::move(errors);
 	return stackTooDeepErrors;
 }
 
-std::vector<StackLayoutGenerator::StackTooDeep> StackLayoutGenerator::reportStackTooDeep(CFG const& _cfg, YulName _functionName)
+std::vector<StackLayoutGenerator::StackTooDeep> StackLayoutGenerator::reportStackTooDeep(CFG const& _cfg, YulName _functionName, bool _simulateFunctionsWithJumps)
 {
 	StackLayout stackLayout{{}, {}};
 	CFG::FunctionInfo const* functionInfo = nullptr;
@@ -82,7 +82,7 @@ std::vector<StackLayoutGenerator::StackTooDeep> StackLayoutGenerator::reportStac
 		yulAssert(functionInfo, "Function not found.");
 	}
 
-	StackLayoutGenerator generator{stackLayout, functionInfo, _cfg.simulateFunctionsWithJumps};
+	StackLayoutGenerator generator{stackLayout, functionInfo, _simulateFunctionsWithJumps};
 	CFG::BasicBlock const* entry = functionInfo ? functionInfo->entry : _cfg.entry;
 	generator.processEntryPoint(*entry);
 	return generator.reportStackTooDeep(*entry);

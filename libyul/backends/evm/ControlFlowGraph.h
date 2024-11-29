@@ -123,7 +123,7 @@ inline bool canBeFreelyGenerated(StackSlot const& _slot)
 /// Control flow graph consisting of ``CFG::BasicBlock``s connected by control flow.
 struct CFG
 {
-	explicit CFG(bool _simulateFunctionsWithJumps): simulateFunctionsWithJumps(_simulateFunctionsWithJumps) {}
+	explicit CFG() {}
 	CFG(CFG const&) = delete;
 	CFG(CFG&&) = delete;
 	CFG& operator=(CFG const&) = delete;
@@ -220,8 +220,6 @@ struct CFG
 		bool canContinue = true;
 	};
 
-	/// True if control flow graph simulates functions with jumps. False otherwise. True for legacy bytecode
-	bool simulateFunctionsWithJumps = true;
 	/// The main entry point, i.e. the start of the outermost Yul block.
 	BasicBlock* entry = nullptr;
 	/// Subgraphs for functions.
