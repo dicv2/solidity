@@ -233,12 +233,11 @@ bool TypeChecker::visit(ImportDirective const&)
 
 void TypeChecker::endVisit(ContractDefinition const& _contract)
 {
-	if (
-		ASTPointer<Expression> const baseLocation = _contract.storageBaseLocationExpression()
-	)
+	if (ASTPointer<Expression> const baseLocation = _contract.storageBaseLocationExpression())
 	{
 		if (!*baseLocation->annotation().isPure)
 		{
+			// TODO: handle erc7201 as a builtin function ?
 			if (auto functionCall = dynamic_cast<FunctionCall const*>(baseLocation.get()))
 				if (
 					auto const* identifier = dynamic_cast<Identifier const*>(&functionCall->expression());
