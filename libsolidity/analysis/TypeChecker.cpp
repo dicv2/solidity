@@ -22,6 +22,7 @@
  */
 
 #include <libsolidity/analysis/TypeChecker.h>
+#include <libsolidity/analysis/ConstantEvaluator.h>
 #include <libsolidity/ast/AST.h>
 #include <libsolidity/ast/ASTUtils.h>
 #include <libsolidity/ast/UserDefinableOperators.h>
@@ -263,7 +264,51 @@ void TypeChecker::endVisit(ContractDefinition const& _contract)
 				expressionType->humanReadableName(),
 				result.message()
 			);
+			return;
 		}
+		
+		if (auto const* rationalType = dynamic_cast<RationalNumberType const*>(expressionType))
+		{
+			if (rationalType->isFractional())
+				m_errorReporter.typeError(
+					40_error,
+					baseLocation->location(),
+					"Cannot have a fractional number as the contract base storage location"
+				);
+			// store value
+			m_errorReporter.warning(
+				128_error,
+				"Storage base location has type/value " + rationalType->toString(false)
+			);
+		}
+		else if (auto const* integerType = dynamic_cast<IntegerType const*>(expressionType))
+		{
+			// evaluate ? and store
+			std::optional<ConstantEvaluator::TypedRational> value = ConstantEvaluator::evaluate(m_errorReporter, *baseLocation);
+			if (!value)
+				m_errorReporter.typeError(43_error, baseLocation->location(), "Could not evaluate expression");
+			
+			auto bi2str = [](bigint const& _num) -> std::string {
+				std::string str = _num.str();
+				if (str.size() > 32)
+				{
+					size_t omitted = str.size() - 8;
+					str = str.substr(0, 4) + "...(" + std::to_string(omitted) + " digits omitted)..." + str.substr(str.size() - 4, 4);
+				}
+				return str;
+			};
+			m_errorReporter.warning(
+				127_error,
+				"Storage base location has type/value " + integerType->toString(false) + " " +
+				(value ? bi2str(value->value.numerator()) : "")
+			);
+		}
+		else // TODO: just assert false because of the previous test (convertible to u256)?
+			m_errorReporter.typeError(
+				42_error,
+				baseLocation->location(),
+				"The contract storage location should be specified by a expression which results in a number"
+			);
 	}
 }
 
